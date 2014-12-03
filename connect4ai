@@ -1,0 +1,901 @@
+#include<iostream>
+#include <ctime>
+using namespace std;
+
+//Declare Variable 
+char player = 'X';
+char ai = 'O';
+bool draw = false,who_win = true,playerwin = false;
+bool check_win();
+int FWwinstage[69][4];
+int REwinstage[69][4];
+int winstage[138][4];
+int cheatstage[72][4];
+int FWcheatstage[36][4];
+int REcheatstage[36][4];
+int moved[100][2];
+int moved2[100][2];
+int cx = 0;
+
+//create winstage
+void createwinstage() {
+	int a = 0,l = 0,b = 0,m = 0,c = 0,o = 0,d = 6,n = 0;
+	// |
+	for(int k = 0; k < 3 ; k++) {
+		for(int i = 0; i < 7 ; i++) {
+			for(int j = 0; j < 4 ; j++) {
+				if(j == 0) {
+					FWwinstage[i+l][j] = a;
+				}else {
+					FWwinstage[i+l][j] = a + 7;
+					a+= 7;
+				}
+			}
+			a -= 20;
+		}
+		l += 7;
+	}
+	// -
+	m = l;
+	for(int k = 0; k < 4 ; k++) {
+		for(int i = 0; i < 6 ; i++) {
+			for(int j = 0; j < 4 ; j++) {
+				if(j == 0) {
+					FWwinstage[i+m][j] = b;
+				}else {
+					FWwinstage[i+m][j] = b + 1;
+					b += 1;
+				}
+			}
+			b += 4;
+		}
+		m += 6;
+		b -= 41;
+	}
+
+	//  \;
+	o = m;
+	for(int k = 0; k < 3 ; k++) {
+		//  \1
+		if(k == 0) {
+			for(int i = 0; i < 6 ; i++) {
+				for(int j = 0; j < 4 ; j++) {
+					if(j == 0) {
+						FWwinstage[i+o][j] = c;
+					}else {
+						FWwinstage[i+o][j] = c + 8;
+						c += 8;
+					}
+				}
+				if(i < 3) {c -= 17;
+				}else {c -= 23;}
+				if(i == 2) {c = 1;}
+			}
+			o += 6;
+		}
+		// \2
+		else if(k == 1) {
+			c = 15;
+			for(int i = 0; i < 3 ; i++) {
+				for(int j = 0; j < 4 ; j++) {
+					if(j == 0) {
+						FWwinstage[i+o][j] = c;
+					}else {
+						FWwinstage[i+o][j] = c + 8;
+						c += 8;
+					}
+				}
+				c -= 23;
+			}
+			o += 3;
+		}
+		// \3
+		else{
+			c = 8;
+			for(int i = 0; i < 3 ; i++) {
+				for(int j = 0; j < 4 ; j++) {
+					if(j == 0) {
+						FWwinstage[i+o][j] = c;
+					}else {
+						FWwinstage[i+o][j] = c + 8;
+						c += 8;
+					}
+				}
+				c -= 23;
+			}
+			o += 3;
+		}
+	}
+
+	//
+	n = o;
+	for(int k = 0; k < 3 ; k++) {
+		// /1
+		if(k == 0) {
+			for(int i = 0; i < 6 ; i++) {
+				for(int j = 0; j < 4 ; j++) {
+					if(j == 0) {
+						FWwinstage[i+n][j] = d;
+					}else {
+						FWwinstage[i+n][j] = d + 6;
+						d += 6;
+					}
+				}
+				if(i < 3) {d -= 11;
+				}else {d -= 19;}
+				if(i == 2) {d = 5;}
+			}
+			n += 6;
+
+		}
+		// /2
+		else if(k == 1) {
+			d = 19;
+			for(int i = 0; i < 3 ; i++) {
+				for(int j = 0; j < 4 ; j++) {
+					if(j == 0) {
+						FWwinstage[i+n][j] = d;
+					}else {
+						FWwinstage[i+n][j] = d + 6;
+						d += 6;
+					}
+				}
+				d -= 19;
+			}
+			n += 3;
+		}
+		//  /3
+		else{
+			d = 12;
+			for(int i = 0; i < 3 ; i++) {
+				for(int j = 0; j < 4 ; j++) {
+					if(j == 0) {
+						FWwinstage[i+n][j] = d;
+					}else {
+						FWwinstage[i+n][j] = d + 6;
+						d += 6;
+					}
+				}
+				d -= 19;
+			}
+			n += 3;
+		}
+	}
+}
+void reverse_winstage() {
+	for(int i = 0;i < 69;i++) {
+		for(int j = 3,k = 0;j >= 0,k < 4;j--,k++) {
+			REwinstage[i][k] = FWwinstage[i][j];
+		}
+	}
+}
+void merge_winstage() {
+	for(int i = 0;i < 69;i++) {
+		for(int j = 0; j < 4; j++) {
+			winstage[i+69][j] = REwinstage[i][j];
+		}
+	}
+}
+
+//create Cheatstage
+void createCheatStage() {
+	int a = 0,b = 0;
+//	int a = 0,l = 0;
+	int ex = 0;
+	for(int i = 0; i < 36; i++) {
+		
+		if(i < 6) {
+			for(int j = 0 ; j < 4;j++) {
+				if(j == 0) {
+				FWcheatstage[i][j] = ex;
+				}else if(j == 1) {
+					FWcheatstage[i][j] = ex+j;
+				}else if(j == 2) {
+					FWcheatstage[i][j] = ex+j+1;
+				}else {
+					FWcheatstage[i][j] = ex+j+2;
+				}
+			}
+			ex += 7;
+
+		}else if(i < 12){
+			if(i == 6) { ex = 1; }
+			for(int j = 0 ; j < 4;j++) {
+				if(j == 0) {
+				FWcheatstage[i][j] = ex;
+				}else if(j == 1) {
+					FWcheatstage[i][j] = ex+j+1;
+				}else if(j == 2) {
+					FWcheatstage[i][j] = ex+j+2;
+				}else if(j == 3) {
+					FWcheatstage[i][j] = ex+j+2;
+				}else {
+					FWcheatstage[i][j] = ex+j+3;
+				}
+			}
+			ex += 7;
+		}else if(i < 18){
+			if(i == 12) { ex = 0; }
+			for(int j = 0 ; j < 4;j++) {
+				if(j == 0) {
+				FWcheatstage[i][j] = ex;
+				}else if(j == 1) {
+					FWcheatstage[i][j] = ex+j+1;
+				}else if(j == 2) {
+					FWcheatstage[i][j] = ex+j+2;
+				}else if(j == 3) {
+					FWcheatstage[i][j] = ex+j+3;
+				}
+			}
+			ex += 7;
+		}else if(i < 36){
+			if(i == 18) { ex = 0; }
+			if(i == 21 || i == 24 || i == 27 || i == 30 || i == 33) {ex +=1;}
+			for(int j = 0 ; j < 4;j++) {
+				
+				if(j == 0) {
+				FWcheatstage[i][j] = ex;
+				}else if(j == 1) {
+					FWcheatstage[i][j] = ex+j;
+				}else if(j == 2) {
+					FWcheatstage[i][j] = ex+j-1;
+				}else if(j == 3) {
+					FWcheatstage[i][j] = ex+j-1;
+				}
+				
+			}
+			ex += 2;
+			
+		}//else
+		
+	}
+}
+void reverse_Cheatstage() {
+	for(int i = 0;i < 6;i++) {
+		for(int j = 3,k = 0;j >= 0,k < 4;j--,k++) {
+			REcheatstage[i][k] = FWcheatstage[i][j];
+		}
+	}
+}
+void merge_Cheatstage() {
+	for(int i = 0;i < 6;i++) {
+		for(int j = 0; j < 4; j++) {
+			cheatstage[i+6][j] = REcheatstage[i][j];
+		}
+	}
+}
+
+//find cell
+int find_place_cell(int board[6][7]) {
+	int count = 0,pos = 0,max = 0;
+	 for(int i = 0; i < 7; i++) {
+		 for(int j = 0; j < 6; j++) {
+		   if (board[j][i] == 0) { count++ ;}
+		   if ((board[j][5] == 0 && board[j-1][4] == 1 && board[j-2][4] == 1)|| (board[j][5] == 0 && board[j+1][4] == 1 && board[j+2][4] == 1)) { count-- ;}
+		}
+		 if(count > max) {
+			 max = count;
+			 pos = i;
+			 count = 0 ;
+		 }
+	}
+	 return pos;
+}
+
+//find cell by each row
+int find_place_cell_by_row(int board[6][7],int play) {
+	int rand_cell_Byrow[100],i = 0;
+		 for(int j = 0; j < 7; j++) {
+		    if (board[0][j] == 0) { if((play == j-1)) {rand_cell_Byrow[i] = j; i++;}
+			else if((play == j+1)) {rand_cell_Byrow[i] = j; i++;}
+			}
+		}
+		 int r = rand() % i;
+		 return rand_cell_Byrow[r];
+}
+//check fullcell
+bool not_full_cell(int board[6][7]) {
+	 for(int i = 0; i < 6; i++) {
+		 for(int j = 0; j < 7; j++) {
+		   if (board[i][j] == 0) {return false;}
+		 }
+   }
+	 return true;
+}
+
+//check Full Column
+bool check_full_slot(int board[6][7],int pick) {
+	if (board[0][pick] != 0) {return false;}
+	 return true;
+}
+
+//check redanduncy1
+bool check_duplicate_move(int x, int y,int cx_size) {
+	for(int i = 0; i < cx_size; i++) {
+		if (moved[i][0] == x && moved[i][1] == y) { return false;}
+   }
+	 return true;
+}
+
+//check redanduncy2
+bool check_duplicate_move2(int x, int y,int cx_size) {
+	for(int i = 0; i < cx_size; i++) {
+		if (moved2[i][0] == x && moved2[i][1] == y) {return false;}
+	}
+	 return true;
+}
+
+//checkwin
+bool check_win(int winstage[138][4],int board[6][7]) {
+	int count = 0,count2 = 0,x=0;
+	for(int i = 0; i < 138; i++) {
+		for(int j = 0; j < 4; j++) {
+			if(winstage[i][j] <= 6) {x = 0;}
+			else if(winstage[i][j] <= 13) {x = 1;}
+			else if(winstage[i][j] <= 20) {x = 2;}
+			else if(winstage[i][j] <= 27) {x = 3;}
+			else if(winstage[i][j] <= 34) {x = 4;}
+			else if(winstage[i][j] <= 41) {x = 5;}
+			if(board[x][winstage[i][j] % 7] == 1) {count++;}
+			if(board[x][winstage[i][j] % 7] == 2) {count2++;}
+		}
+		if(count == 4) { who_win = false;return true;}
+		if(count2 == 4) {return true;}
+		count = 0;
+		count2 = 0;
+	}
+	return false; 
+}
+
+void Grid(int grid[6][7])
+{
+	for(int i=0;i<6;i++)
+	{
+		for(int j=0;j<7;j++)
+		{
+			grid[i][j]=0;
+		}
+	}
+}
+
+void Display(int grid[6][7])
+{
+	cout << "                                 " << endl;
+	cout << "                                 " << endl;
+	cout << "     |     |     |     |     |     |     |" << endl;
+	for (int i = 0; i < 6; i++)	{
+		cout << " ";
+		for (int j = 0; j < 7; j++)	{
+			if (grid[i][j] == 1)	{
+				cout << " X ";
+			}
+			else if (grid[i][j] == 2)	{
+				cout << " O ";
+			}
+			else	{
+				cout << "   ";
+			}if (j < 7)	{
+				cout << " | ";
+			}
+		}
+		cout << endl;
+		if (i< 6)	{
+			cout << "-----+-----+-----+-----+-----+-----+-----+" << endl;
+		}
+	}
+	cout << endl;
+	cout << "--1--+--2--+--3--+--4--+--5--+--6--+--7--+" << endl << endl;
+}
+
+void computer_turn(int board[6][7],int position_player,bool playerwin){
+	bool AI_WIN = true,Intercept_Linear = true,Intercept_diagn = true,Random = true;
+	bool skip = false,skip2 = false;
+	bool checkL = false,checkD = false;
+	int count = 0,x=0,y=0;
+
+	if(playerwin) {
+	//Check the cell for AI to win.
+	if(AI_WIN) {
+		count = 0;
+		bool FW = true,RE = true;
+
+		
+		if(FW){
+			for(int i = 0; i < 138; i++) {
+			for(int j = 0; j < 4; j++) {
+				if(winstage[i][j] <= 6) {x = 0;}
+				else if(winstage[i][j] <= 13) {x = 1;}
+				else if(winstage[i][j] <= 20) {x = 2;}
+				else if(winstage[i][j] <= 27) {x = 3;}
+				else if(winstage[i][j] <= 34) {x = 4;}
+				else if(winstage[i][j] <= 41) {x = 5;}
+				if(board[x][winstage[i][j] % 7] == 2) {
+					count++;
+				}else if(board[x][winstage[i][j] % 7] == 1) {
+					if(count == 0) {count = -1;}
+					else {count = 0;}
+					
+				}else {y = winstage[i][j] % 7;}
+			}
+			if(check_duplicate_move(x,y,cx)) {
+			
+			if(count == 3 && AI_WIN) {
+					if(check_full_slot(board,y)) {
+						if(board[0][y] != 0) {y = find_place_cell(board);}
+						if(board[x-2][y] != 0 || (board[x][y] == 0) && (board[x+1][y] != 0)) {
+							if(board[5][y] == 0){board[5][y] = 2;}
+							else if(board[4][y] == 0){board[4][y] = 2;}
+							else if(board[3][y] == 0){board[3][y] = 2;}
+							else if(board[2][y] == 0){board[2][y] = 2;}
+							else if(board[1][y] == 0){board[1][y] = 2;}
+							else if(board[0][y] == 0){board[0][y] = 2;}
+						}else {skip2 = true;}
+						if(!skip2) {
+						
+						AI_WIN = false;
+						Random = false;
+						Intercept_diagn = false;
+						Intercept_Linear = false;
+
+						}else {
+							skip2 = false;
+						}
+
+						for(int ii = 0; ii < 2 ; ii++) {
+							if(ii == 0) {moved[cx][ii] = x; cx++;}
+							else {moved[cx][ii] = y; cx++;}
+						}//for
+					}// if slot full
+			}
+				
+			}
+			count = 0;
+		}
+		}//FW
+		if(RE) {
+			for(int i = 0; i < 138; i++) {
+			for(int j = 0; j < 4; j++) {
+				if(winstage[i][j] <= 6) {x = 0;}
+				else if(winstage[i][j] <= 13) {x = 1;}
+				else if(winstage[i][j] <= 20) {x = 2;}
+				else if(winstage[i][j] <= 27) {x = 3;}
+				else if(winstage[i][j] <= 34) {x = 4;}
+				else if(winstage[i][j] <= 41) {x = 5;}
+				if(board[x][winstage[i][j] % 7] == 2) {
+					count++;
+				}else if(board[x][winstage[i][j] % 7] == 1) {
+					if(count == 0) {count = -1;}
+					else {count = 0;}
+					
+				}else {y = winstage[i][j] % 7;}
+			}
+			if(check_duplicate_move(x,y,cx)) {
+			
+			if(count == 3 && AI_WIN) {
+					if(check_full_slot(board,y)) {
+						if(board[0][y] != 0) {y = find_place_cell(board);}
+						if(board[x+1][y] != 0 || (board[x][y] == 0) && (board[x+1][y] != 0)) {
+							if(board[5][y] == 0){board[5][y] = 2;}
+							else if(board[4][y] == 0){board[4][y] = 2;}
+							else if(board[3][y] == 0){board[3][y] = 2;}
+							else if(board[2][y] == 0){board[2][y] = 2;}
+							else if(board[1][y] == 0){board[1][y] = 2;}
+							else if(board[0][y] == 0){board[0][y] = 2;}
+						}else {skip2 = true;}
+						if(!skip2) {
+						
+						AI_WIN = false;
+						Random = false;
+						Intercept_diagn = false;
+						Intercept_Linear = false;
+
+						}else {
+							skip2 = false;
+						}
+
+						for(int ii = 0; ii < 2 ; ii++) {
+							if(ii == 0) {moved[cx][ii] = x; cx++;}
+							else {moved[cx][ii] = y; cx++;}
+						}//for
+					}// if slot full
+			}
+				
+			}
+			count = 0;
+		}
+		}//RE
+
+		
+	}
+
+	//Then Check the cell for intercept player to win.
+	if(Intercept_Linear) {
+		bool FW = true,RE = true;
+		count = 0,x=0,y=0;
+
+		if(FW){
+			for(int i = 0; i < 45; i++) {
+				for(int j = 0; j < 4; j++) {
+					if(winstage[i][j] <= 6) {x = 0;}
+					else if(winstage[i][j] <= 13) {x = 1;}
+					else if(winstage[i][j] <= 20) {x = 2;}
+					else if(winstage[i][j] <= 27) {x = 3;}
+					else if(winstage[i][j] <= 34) {x = 4;}
+					else if(winstage[i][j] <= 41) {x = 5;}
+					if(board[x][winstage[i][j] % 7] == 1) {
+						count++;
+					}else if(board[x][winstage[i][j] % 7] == 2) {
+						if(count == 0) {count = -1;}
+						else {count = 0;}
+					}else {y = winstage[i][j] % 7;}
+				}
+				if(check_duplicate_move(x,y,cx)) {
+					if(count == 3 && Intercept_Linear) {
+
+						if(check_full_slot(board,y)) {
+							if(board[0][y] != 0) {y = find_place_cell(board);}
+							if(board[x-2][y] != 0) {
+								if(board[5][y] == 0){board[5][y] = 2;}
+								else if(board[4][y] == 0){board[4][y] = 2;}
+								else if(board[3][y] == 0){board[3][y] = 2;}
+								else if(board[2][y] == 0){board[2][y] = 2;}
+								else if(board[1][y] == 0){board[1][y] = 2;}
+								else if(board[0][y] == 0){board[0][y] = 2;}
+							}else {skip = true;checkL = true;}
+						if(!skip) {
+							Intercept_Linear = false;
+							Intercept_diagn = false;
+							Random = false;
+							FW = false;
+							RE = false;
+						}else {skip = false;}
+				
+							for(int ii = 0; ii < 2 ; ii++) {
+								if(ii == 0) {moved[cx][ii] = x; cx++;}
+								else {moved[cx][ii] = y; cx++;}
+							}//for
+						}//if slot full
+					}
+				
+				}//duplicate
+				count = 0;
+				}//for
+		}//FW
+		if(RE) {
+			for(int i = 0; i < 45; i++) {
+				for(int j = 0; j < 4; j++) {
+					if(winstage[i+69][j] <= 6) {x = 0;}
+					else if(winstage[i+69][j] <= 13) {x = 1;}
+					else if(winstage[i+69][j] <= 20) {x = 2;}
+					else if(winstage[i+69][j] <= 27) {x = 3;}
+					else if(winstage[i+69][j] <= 34) {x = 4;}
+					else if(winstage[i+69][j] <= 41) {x = 5;}
+					if(board[x][winstage[i+69][j] % 7] == 1) {
+						count++;
+					}else if(board[x][winstage[i+69][j] % 7] == 2) {
+						if(count == 0) {count = -1;}
+						else {count = 0;}
+					}else {y = winstage[i+69][j] % 7;}
+				}
+				if(check_duplicate_move(x,y,cx)) {
+					if(count == 3 && Intercept_Linear) {
+						if(check_full_slot(board,y)) {
+							if(board[0][y] != 0) {y = find_place_cell(board);}
+							if(board[x+1][y] != 0) {
+								if(board[5][y] == 0){board[5][y] = 2;}
+								else if(board[4][y] == 0){board[4][y] = 2;}
+								else if(board[3][y] == 0){board[3][y] = 2;}
+								else if(board[2][y] == 0){board[2][y] = 2;}
+								else if(board[1][y] == 0){board[1][y] = 2;}
+								else if(board[0][y] == 0){board[0][y] = 2;}
+							}else {skip = true;checkL = true;}
+						if(!skip) {
+							Intercept_Linear = false;
+							Intercept_diagn = false;
+							Random = false;
+							FW = false;
+							RE = false;
+
+						}else {skip = false;}
+				
+							for(int ii = 0; ii < 2 ; ii++) {
+								if(ii == 0) {moved[cx][ii] = x; cx++;}
+								else {moved[cx][ii] = y; cx++;}
+							}//for
+						}//if slot full
+					}
+				
+				}//duplicate
+				count = 0;
+				}//for
+		}//RE
+	}
+
+	if((Intercept_diagn)) {
+	count = 0,x=0,y=0;
+	bool FW = true,RE = true;
+
+	if(FW){
+		for(int i = 0; i < 69-45; i++) {
+				for(int j = 0; j < 4; j++) {
+					if(winstage[i+57][j] <= 6) {x = 0;}
+					else if(winstage[i+45][j] <= 13) {x = 1;}
+					else if(winstage[i+45][j] <= 20) {x = 2;}
+					else if(winstage[i+45][j] <= 27) {x = 3;}
+					else if(winstage[i+45][j] <= 34) {x = 4;}
+					else if(winstage[i+45][j] <= 41) {x = 5;}
+					if(board[x][winstage[i+45][j] % 7] == 1) {
+						count++;
+					}else if(board[x][winstage[i+45][j] % 7] == 2) {
+						if(count == 0) {count = -1;}
+						else {count = 0;}
+					}else {y = winstage[i+45][j] % 7;}
+				}
+				if(check_duplicate_move2(x,y,cx)) {
+				if(count == 3 && Intercept_diagn) {
+					if(board[0][y] != 0) {y = find_place_cell(board);}
+					if(check_full_slot(board,y)) {
+						if(board[x-2][y] != 0 || board[x][y] == 0) {
+								if(board[5][y] == 0){board[5][y] = 2;}
+								else if(board[4][y] == 0){board[4][y] = 2;}
+								else if(board[3][y] == 0){board[3][y] = 2;}
+								else if(board[2][y] == 0){board[2][y] = 2;}
+								else if(board[1][y] == 0){board[1][y] = 2;}
+								else if(board[0][y] == 0){board[0][y] = 2;}
+								Intercept_diagn = false;
+								Random = false;
+								RE = false;
+								FW = false;
+						}else {checkD = true;}
+						count = 0;
+						//intercept = true;
+					}//if slot full
+				}//end-if count == -1
+			}
+				count = 0;
+		}//for
+	}//FW
+	if(RE){
+
+	for(int i = 0; i < 69-45; i++) {
+				for(int j = 0; j < 4; j++) {
+					if(winstage[i+114][j] <= 6) {x = 0;}
+					else if(winstage[i+114][j] <= 13) {x = 1;}
+					else if(winstage[i+114][j] <= 20) {x = 2;}
+					else if(winstage[i+114][j] <= 27) {x = 3;}
+					else if(winstage[i+114][j] <= 34) {x = 4;}
+					else if(winstage[i+114][j] <= 41) {x = 5;}
+					if(board[x][winstage[i+114][j] % 7] == 1) {
+						count++;
+					}else if(board[x][winstage[i+114][j] % 7] == 2) {
+						if(count == 0) {count = -1;}
+						else {count = 0;}
+					}else {y = winstage[i+114][j] % 7;}
+				}
+				if(check_duplicate_move2(x,y,cx)) {
+				if(count == 3 && Intercept_diagn) {
+					if(board[0][y] != 0) {y = find_place_cell(board);}
+					if(check_full_slot(board,y)) {
+						if(board[x+1][y] != 0 || (board[x][y] == 0 && board[x+1][y] != 0)) {
+								if(board[5][y] == 0){board[5][y] = 2;}
+								else if(board[4][y] == 0){board[4][y] = 2;}
+								else if(board[3][y] == 0){board[3][y] = 2;}
+								else if(board[2][y] == 0){board[2][y] = 2;}
+								else if(board[1][y] == 0){board[1][y] = 2;}
+								else if(board[0][y] == 0){board[0][y] = 2;}
+								Intercept_diagn = false;
+								Random = false;
+								RE = false;
+								FW = false;
+							}else {checkD = true;}
+						count = 0;
+
+					}//if slot full
+				}//end-if count == -1
+			
+			}
+				count = 0;
+		}//for
+	}//RE
+		}
+if((Random)) {
+	count = 0,x=0,y=0;
+	for(int i = 0; i < 138; i++) {
+			for(int j = 0; j < 4; j++) {
+				if(winstage[i][j] <= 6) {x = 0;}
+				else if(winstage[i][j] <= 13) {x = 1;}
+				else if(winstage[i][j] <= 20) {x = 2;}
+				else if(winstage[i][j] <= 27) {x = 3;}
+				else if(winstage[i][j] <= 34) {x = 4;}
+				else if(winstage[i][j] <= 41) {x = 5;}
+				if(board[x][winstage[i][j] % 7] == 1) {
+					count++;
+				}else if(board[x][winstage[i][j] % 7] == 2) {
+					if(count == 0) {count = -1;}
+					else {count = 0;}
+				}else {y = winstage[i][j] % 7;}
+			}
+			if(check_duplicate_move2(x,y,cx)) {
+			if(Random && count == 1) {
+				int temp = position_player;
+						if((board[x+2][temp] == 1 && board[x+2][temp+1] == 0) || (board[x][temp] == 1 && board[x][temp+1] == 0)) {y = find_place_cell_by_row(board,position_player);}
+						else if((board[x+2][temp] == 1 && board[x+2][temp-1] == 0) || (board[x][temp] == 1 && board[x][temp-1] == 0)) {y = find_place_cell_by_row(board,position_player);}
+						else if((board[x+2][temp] == 1 && board[x+2][temp-1] == 1) || (board[x][temp] == 1 && board[x][temp-1] == 1)) {y = temp+3;}
+						else if((board[x+2][temp] == 1 && board[x+2][temp+1] == 1) || (board[x][temp] == 1 && board[x][temp+1] == 1)) {y = temp-3;}
+					if (y < 0 || y > 6){y = temp;}
+					if(board[0][y] != 0) {y = find_place_cell_by_row(board,position_player);}
+
+					//if(board[x+1][y] != 0) {
+					if(checkL || checkD) { y = find_place_cell_by_row(board,position_player); if(board[0][y] != 0) {y = find_place_cell_by_row(board,position_player);}
+					}
+							if(board[5][y] == 0){board[5][y] = 2;}
+							else if(board[4][y] == 0){board[4][y] = 2;}
+							else if(board[3][y] == 0){board[3][y] = 2;}
+							else if(board[2][y] == 0){board[2][y] = 2;}
+							else if(board[1][y] == 0){board[1][y] = 2;}
+							else if(board[0][y] == 0){board[0][y] = 2;}
+					
+						//}
+					count = 0;
+					Intercept_Linear = true;
+					Random = false;
+					AI_WIN = true;
+					Intercept_diagn = true;
+				}//if slot full
+			else if(Random){
+				int countch = 0;bool FW =true,RE = true;
+				
+				if(FW) {
+
+				for(int i = 0; i < 36; i++) {
+					for(int j = 0; j < 4; j++) {
+						if(cheatstage[i][j] <= 6) {x = 0;}
+						else if(cheatstage[i][j] <= 13) {x = 1;}
+						else if(cheatstage[i][j] <= 20) {x = 2;}
+						else if(cheatstage[i][j] <= 27) {x = 3;}
+						else if(cheatstage[i][j] <= 34) {x = 4;}
+						else if(cheatstage[i][j] <= 41) {x = 5;}
+						if(board[x][cheatstage[i][j] % 7] == 1) {
+							countch++;
+						}else if(board[x][cheatstage[i][j] % 7] == 2) {
+							if(countch == 0) {countch = -1;}
+							else {countch = 0;}
+						}else {y = cheatstage[i][j] % 7;}
+					}
+					
+					if(countch == 2 && FW) {
+						
+						y = find_place_cell(board);
+					
+						if (y < 0 || y > 6){y = position_player;}
+						if(board[0][y] != 0) {y = find_place_cell(board);}
+						//if(board[x+1][y] != 0) {
+								if(checkL || checkD) { y = find_place_cell(board); if(board[0][y] != 0) {y = find_place_cell(board);}
+					}
+							if(board[5][y] == 0){board[5][y] = 2;}
+							else if(board[4][y] == 0){board[4][y] = 2;}
+							else if(board[3][y] == 0){board[3][y] = 2;}
+							else if(board[2][y] == 0){board[2][y] = 2;}
+							else if(board[1][y] == 0){board[1][y] = 2;}
+							else if(board[0][y] == 0){board[0][y] = 2;}
+					
+							//}
+						countch = 0;
+						Intercept_Linear = true;
+						Random = false;
+						AI_WIN = true;
+						Intercept_diagn = true;
+						RE = false;
+						FW = false;
+					}//if countch == 2
+				}//for
+				}//FW
+				if(RE){
+					for(int i = 0; i < 36; i++) {
+					for(int j = 0; j < 4; j++) {
+						if(cheatstage[i+36][j] <= 6) {x = 0;}
+						else if(cheatstage[i+36][j] <= 13) {x = 1;}
+						else if(cheatstage[i+36][j] <= 20) {x = 2;}
+						else if(cheatstage[i+36][j] <= 27) {x = 3;}
+						else if(cheatstage[i+36][j] <= 34) {x = 4;}
+						else if(cheatstage[i+36][j] <= 41) {x = 5;}
+						if(board[x][cheatstage[i+36][j] % 7] == 1) {
+							countch++;
+						}else if(board[x][cheatstage[i+36][j] % 7] == 2) {
+							if(countch == 0) {countch = -1;}
+							else {countch = 0;}
+						}else {y = cheatstage[i+36][j] % 7;}
+					}
+					if(countch == 2 && RE) {
+						y = find_place_cell(board);
+					
+						if (y < 0 || y > 6){y = position_player;}
+						if(board[0][y] != 0) {y = find_place_cell(board);}
+						//if(board[x+1][y] != 0) {
+								if(checkL || checkD) { y = find_place_cell(board); if(board[0][y] != 0) {y = find_place_cell(board);}
+					}
+							if(board[5][y] == 0){board[5][y] = 2;}
+							else if(board[4][y] == 0){board[4][y] = 2;}
+							else if(board[3][y] == 0){board[3][y] = 2;}
+							else if(board[2][y] == 0){board[2][y] = 2;}
+							else if(board[1][y] == 0){board[1][y] = 2;}
+							else if(board[0][y] == 0){board[0][y] = 2;}
+					
+							//}
+						countch = 0;
+						Intercept_Linear = true;
+						Random = false;
+						AI_WIN = true;
+						Intercept_diagn = true;
+						RE = false;
+						FW = false;
+					}//if countch == 2
+				}//for
+				}//RE
+				countch = 0;
+			}
+			}//end-if count == -1
+			
+		}
+			count = 0;
+	}
+	
+}//playerwin
+
+}
+int playerturn(int grid[6][7])
+{   cout << "Player : X's Please Drop (1-7)" << endl;
+	int pick;
+	char sry[] = "  Sorry,your number is out of range or full slot, please try again";
+	cin >> pick;
+	while (pick < 1 || pick > 7 || !check_full_slot(grid,pick-1))	{
+			cout << "Player : " << player << sry << endl;
+			cin >> pick;
+		}
+	int slot = pick - 1;
+
+	for (int i = 5; i >= 0; i--){
+		if (grid[i][slot] == 0)	{
+			grid[i][slot] = 1;
+			break;
+		}
+	}
+	if(check_win(winstage,grid)) {
+		playerwin = true;
+	}
+	return slot;
+}
+
+ void main()
+{
+	int grid[6][7];
+	createwinstage();
+	reverse_winstage();
+	merge_winstage();
+	createCheatStage();
+	reverse_Cheatstage();
+	merge_Cheatstage();
+
+	Grid(grid);
+
+	while(!check_win(winstage,grid)) {
+		system("cls");
+		Display(grid);
+		computer_turn(grid,playerturn(grid),!playerwin);
+		check_win(winstage,grid);
+		if(!not_full_cell) {
+			break;
+		}
+	}
+	system("cls");
+	Display(grid);
+	if(!not_full_cell) {
+		cout << "Game is Draw!" << endl;
+	}else if(who_win) {
+		cout << "AI : O's Win!!!!" << endl;
+	}else if(!who_win) {
+		cout << "Player : X's Win!!!!" << endl;
+	}
+
+	system("pause");
+}
